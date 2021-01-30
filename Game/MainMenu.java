@@ -65,16 +65,14 @@ public class MainMenu extends JFrame implements Runnable {
 			e.printStackTrace();
 		}
 		
-		for(int i=0; i < dataFile.size(); i++) {
-			String[] truth = dataFile.get(i).split("=");
+		for(int i= 0; i < dataFile.size()-1; i++) {
 			int x = i % 7;
 			int rx = i / 7;
 			int y = i % 5;
-			boolean lockValue = false;
-			if(truth[1].equals("true"))
-				lockValue = true;
+			boolean lockValue = true;
+
 	
-			levels[x][y] = new LevelStatus(i + 1, lockValue, ((x % 7) * 115) + 130, ((rx % 5) * 125) + 87, 64, 64);
+			levels[x][y] = new LevelStatus(i + 1, true, ((x % 7) * 115) + 130, ((rx % 5) * 125) + 87, 64, 64);
 		}
 		
 		init();

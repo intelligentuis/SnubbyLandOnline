@@ -7,7 +7,7 @@ public class GameState  {
 	private int currentState;
 	private final int SCREEN_WIDTH = 1000;
 	private final int SCREEN_HEIGHT = 800;
-	private final String TITLE = "World's Hardest Game";
+	private final String TITLE = "Snubby Land";
 	
 	ArrayList<Integer> states = new ArrayList<Integer>();
 	

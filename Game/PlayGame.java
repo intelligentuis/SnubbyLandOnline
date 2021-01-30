@@ -1,3 +1,9 @@
+import java.rmi.Naming;
+import java.util.*;
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
 
 
 import java.awt.Color;
@@ -29,6 +35,11 @@ import javax.swing.JFrame;
 
 @SuppressWarnings("serial")
 public class PlayGame extends JFrame implements Runnable {
+
+	private static final String KEY = "rmi://localhost:10101/";
+	static String id = "#"+UUID.randomUUID();
+
+
 	private boolean isRunning;
 	private Image dbImage;
 	private Graphics dbg;
@@ -56,7 +67,29 @@ public class PlayGame extends JFrame implements Runnable {
 	private boolean died, winLevel;
 	private int deaths = 0;
 
+	public static void Online()
+	{
+		 try {
+            IOnlineGames onlineGames = (IOnlineGames) Naming.lookup(KEY + "Server");
+           
+            String idPlayer2 = onlineGames.getPlayer2("10",id);
+            System.out.println(idPlayer2);
+
+
+            onlineGames.initPlayer(id);
+
+            onlineGames.sendPlayerUpdate(50,54,id);
+            
+            int x = onlineGames.readX(idPlayer2), y = onlineGames.readX(idPlayer2);
+            
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+	}
+
 	public PlayGame(int width, int height, String title) {
+		Online();
 		setSize(width, height);
 		setTitle(title);
 		setResizable(false);
@@ -441,38 +474,7 @@ public class PlayGame extends JFrame implements Runnable {
 		if(player.x + 10 > winSquare.x && player.x + player.width - 10 < winSquare.x + winSquare.width && player.y + 10
 				> winSquare.y && player.y + player.height - 10 < winSquare.y + winSquare.height && foodCount == 0) {
 			winLevel = true;
-			URL url = getClass().getResource("userData.txt");
-			
-			File file = new File(url.getPath());
-			path = file.getAbsolutePath();
-			
-			
-			try {
-				writer = new PrintWriter(path, "UTF-8");
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			
-			for(int i=0; i < 35; i++) {
-				int x = i % 7;
-				int rx = i / 7;
-				int y = i % 5;
-				boolean lockValue = false;
-				if(i < currentLevel + 1)
-					lockValue = true;
-				
-				String truth;
-				if(lockValue)
-					truth = "true\n";
-				else 
-					truth = "false\n";
-				writer.write(i + 1 + "=" + truth);
-				
-			}
-			
-			writer.close();
+
 			
 			currentLevel++;
 			PlayGame.levelMap = GetLevelMap.getLevelMap(currentLevel);

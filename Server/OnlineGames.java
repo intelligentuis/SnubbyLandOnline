@@ -1,12 +1,12 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
-
+import java.awt.Rectangle;
 
 
 public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
 
-    private  Map<String,Player> players = new HashMap<String,Player>() ;
+    private  Map<String,Rectangle> players = new HashMap<String,Rectangle>() ;
     private static Map<String,String> levels = new HashMap<String,String>();
 
 
@@ -42,7 +42,7 @@ public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
     @Override
     public boolean initPlayer(String id) throws RemoteException {
     	System.out.println("Init Player Of ID : "+id);
-        players.put(id,new Player());
+        players.put(id,new Rectangle());
         return true;
     }
 

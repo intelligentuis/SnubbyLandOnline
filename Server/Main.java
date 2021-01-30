@@ -5,7 +5,7 @@ import java.util.*;
 
 
 
-public class Server {
+public class Main {
 
     private static final String KEY = "rmi://localhost:10101/";
 
