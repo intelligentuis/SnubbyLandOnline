@@ -49,7 +49,7 @@ public class PlayGame extends JFrame implements Runnable {
 	private Image topRightCorner, topLeftCorner, topPiece, bottomPiece, rightPiece, leftPiece, allPiece, 
 	bottomRightCorner, bottomLeftCorner, verticalSides, horizontalSides, lightBlue, whitePiece, noSides, greenPiece,
 	rightEnd, bottomEnd, leftEnd, topEnd, playerPic, food, enemy;
-	private MyRectangle player, winSquare;
+	private MyRectangle player, winSquare,player2=new MyRectangle(30, 30,  40, 40);
 	private ArrayList<MyRectangle> ground = new ArrayList<MyRectangle>();
 	private ArrayList<MyRectangle> enemies = new ArrayList<MyRectangle>();
 	private ArrayList<MyRectangle> foodObjects = new ArrayList<MyRectangle>();
@@ -66,15 +66,16 @@ public class PlayGame extends JFrame implements Runnable {
 	
 	private boolean died, winLevel;
 	private int deaths = 0;
-
+	static IOnlineGames onlineGames;
+	static String idPlayer2 ;
+	int i=0;
 	public static void Online()
 	{
 		 try {
-            IOnlineGames onlineGames = (IOnlineGames) Naming.lookup(KEY + "Server");
+            onlineGames = (IOnlineGames) Naming.lookup(KEY + "Server");
            
-            String idPlayer2 = onlineGames.getPlayer2("10",id);
+            idPlayer2= onlineGames.getPlayer2("10",id);
             System.out.println(idPlayer2);
-
 
             onlineGames.initPlayer(id);
 
@@ -599,8 +600,10 @@ public class PlayGame extends JFrame implements Runnable {
 			for(int i=0; i < enemies.size(); i++) {
 				g.drawImage(enemy, enemies.get(i).x, enemies.get(i).y, 20, 20, null);
 			}
-			
+
+
 			g.drawImage(playerPic, player.x, player.y, player.width, player.height, null);
+			g.drawImage(playerPic, player2.x, player2.y, player.width, player.height, null);
 		}
 		
 		repaint();
@@ -612,6 +615,26 @@ public class PlayGame extends JFrame implements Runnable {
 				move();
 				
 				Thread.sleep(30);
+
+				int x=-1,y=-1;
+		
+				try {
+		           i++;
+
+
+		            onlineGames.sendPlayerUpdate(player.x,player.y,id);
+		           
+		            x = onlineGames.readX(idPlayer2);
+		            y = onlineGames.readY(idPlayer2);
+
+		            System.out.println("X:"+x+" Y:"+y);
+		        	player2.x =x;
+		        	player2.y =y;
+
+		        } catch (Exception e) {
+		            e.printStackTrace();
+		        }
+
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
