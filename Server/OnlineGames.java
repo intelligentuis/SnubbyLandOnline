@@ -30,7 +30,13 @@ public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
 
         levels.put(level,idPlayer);
 
-        while(idPlayer.equals(levels.get(level)));
+        while(idPlayer.equals(levels.get(level))) {
+            try
+            {
+
+            Thread.sleep((long)0.2);
+        }catch(Exception e){};
+        };
 
         String id  = levels.get(level);
         levels.remove(level);
