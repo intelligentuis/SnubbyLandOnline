@@ -135,8 +135,8 @@ public class MainMenu extends JFrame implements Runnable {
 
 	
 	public void move() {
-		player.x += player.dx;
-		player.y += player.dy;
+		// player.x += player.dx;
+		// player.y += player.dy;
 		
 		if(player.x + player.width > SW) {
 			player.x = SW - player.width;

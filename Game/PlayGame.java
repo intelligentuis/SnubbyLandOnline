@@ -37,7 +37,7 @@ import javax.swing.JFrame;
 public class PlayGame extends JFrame implements Runnable {
 
 	private static final String KEY = "rmi://localhost:10101/";
-	static String id = "#"+UUID.randomUUID();
+	static String id ;
 
 
 	private boolean isRunning;
@@ -73,16 +73,15 @@ public class PlayGame extends JFrame implements Runnable {
 	{
 		 try {
             onlineGames = (IOnlineGames) Naming.lookup(KEY + "Server");
+            id = onlineGames.initPlayer();
            
-            idPlayer2= onlineGames.waitOnlinePlayer("10",id);
-            System.out.println(idPlayer2);
+           	System.out.println("Player ID "+id);
+            idPlayer2= onlineGames.waitOnlinePlayer(String.valueOf(currentLevel),id);
+            // System.out.println(idPlayer2);
 
-            onlineGames.initPlayer(id);
+            System.out.println("Player2 ID "+idPlayer2);
 
-            onlineGames.sendPlayerUpdate(50,54,id);
-            
-            int x = onlineGames.readX(idPlayer2), y = onlineGames.readX(idPlayer2);
-            
+                       
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -100,7 +99,7 @@ public class PlayGame extends JFrame implements Runnable {
 		addKeyListener(new AL());
 		//addMouseListener(new ML());
 		winLevel = false;
-		System.out.println(currentLevel + " CURRENT LEVEL");
+		System.out.println( "LEVEL" +currentLevel);
 		foodCount = 0;
 
 		for(int i=0; i < levelObjects.length; i++) {
@@ -109,7 +108,6 @@ public class PlayGame extends JFrame implements Runnable {
 					player = new MyRectangle(30, 30, j * 40, i *40);
 					initialX = player.x;
 					initialY = player.y;
-					System.out.println("PLAYER");
 				}
 				
 				if(levelObjects[i][j] == 20) {
@@ -429,11 +427,11 @@ public class PlayGame extends JFrame implements Runnable {
 					currentEnemy.dx = enemySpeed;
 				}
 			}
-			
-			if(enemies.get(i).blockRectangle(player, enemies.get(i)) != 0) {
-				died = true;
-				deaths++;
-			}
+			// 123456789
+			// if(enemies.get(i).blockRectangle(player, enemies.get(i)) != 0) {
+			// 	died = true;
+			// 	deaths++;
+			// }
 			
 			if(died) {
 				player.x = initialX;
@@ -469,7 +467,7 @@ public class PlayGame extends JFrame implements Runnable {
 				currentFood.width = 0;
 				currentFood.height = 0;
 				foodCount--;
-				System.out.println(foodCount);	
+				System.out.println("Coin Eated : "+foodCount);	
 			}
 		}
 		
@@ -477,20 +475,20 @@ public class PlayGame extends JFrame implements Runnable {
 				> winSquare.y && player.y + player.height - 10 < winSquare.y + winSquare.height && foodCount == 0) {
 			// ###########
 			winLevel = true;
-
+			isRunning = false;
 			System.out.println("YOU WIN");
 			try{
-
+			isRunning = false;
 			onlineGames.sendWin(id);
 			onlineGames.sendLoss(idPlayer2);
-		}catch (Exception e ){};
-
 			Main.playGame = false;
 			Main.drawMenu = true;
 			Main.init();
 			setVisible(false);
 			// isRunning = false;
-			dispose();
+			// dispose();
+		}catch (Exception e ){};
+
 		}
 		
 		
@@ -627,14 +625,13 @@ public class PlayGame extends JFrame implements Runnable {
 		           i++;
 
 
-		            onlineGames.sendPlayerUpdate(player.x,player.y,id);
-		           
 		            x = onlineGames.readX(idPlayer2);
 		            y = onlineGames.readY(idPlayer2);
 
-		            if(x == -1)
-		            {
-		            	System.out.println("You loss");
+		            if(x == -1 )
+		            {	if(isRunning)
+		            	System.out.println("YOU LOSS");
+
 		            	isRunning = false;
 
 		            	Main.playGame = false;
@@ -643,7 +640,9 @@ public class PlayGame extends JFrame implements Runnable {
 						setVisible(false);
 						break;
 		            }
-		            System.out.println("X:"+x+" Y:"+y);
+
+		            onlineGames.sendPlayerUpdate(player.x,player.y,id);
+		            // System.out.println("X:"+x+" Y:"+y);
 		        	player2.x =x;
 		        	player2.y =y;
 
