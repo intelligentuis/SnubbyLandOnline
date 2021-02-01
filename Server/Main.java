@@ -18,7 +18,7 @@ public class Main {
 
             Naming.rebind(KEY + "Server", games);
 
-            System.out.println("Server Ready...");
+            System.out.println("Snubby Land Server Ready...");
         } catch (Exception e) {
             e.printStackTrace();
         }

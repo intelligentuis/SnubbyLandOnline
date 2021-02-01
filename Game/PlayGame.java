@@ -48,7 +48,7 @@ public class PlayGame extends JFrame implements Runnable {
 	private boolean drawMap = true;
 	private Image topRightCorner, topLeftCorner, topPiece, bottomPiece, rightPiece, leftPiece, allPiece, 
 	bottomRightCorner, bottomLeftCorner, verticalSides, horizontalSides, lightBlue, whitePiece, noSides, greenPiece,
-	rightEnd, bottomEnd, leftEnd, topEnd, playerPic, food, enemy;
+	rightEnd, bottomEnd, leftEnd, topEnd, playerPic,playerPic2, food, enemy;
 	private MyRectangle player, winSquare,player2=new MyRectangle(30, 30,  40, 40);
 	private ArrayList<MyRectangle> ground = new ArrayList<MyRectangle>();
 	private ArrayList<MyRectangle> enemies = new ArrayList<MyRectangle>();
@@ -74,7 +74,7 @@ public class PlayGame extends JFrame implements Runnable {
 		 try {
             onlineGames = (IOnlineGames) Naming.lookup(KEY + "Server");
            
-            idPlayer2= onlineGames.getPlayer2("10",id);
+            idPlayer2= onlineGames.waitOnlinePlayer("10",id);
             System.out.println(idPlayer2);
 
             onlineGames.initPlayer(id);
@@ -356,6 +356,7 @@ public class PlayGame extends JFrame implements Runnable {
 		leftPiece = ss.grabSprite(750, 270, 40, 40);
 		topRightCorner = ss.grabSprite(800, 270, 40, 40);
 		playerPic = ss.grabSprite(855, 275, 30, 30);
+		playerPic2 = ss.grabSprite(400, 358, 64, 64);
 		lightBlue = ss.grabSprite(900, 270, 40, 40);
 		horizontalSides = ss.grabSprite(950, 270, 40, 40);
 		leftEnd = ss.grabSprite(1000, 270, 40, 40);
@@ -474,17 +475,21 @@ public class PlayGame extends JFrame implements Runnable {
 		
 		if(player.x + 10 > winSquare.x && player.x + player.width - 10 < winSquare.x + winSquare.width && player.y + 10
 				> winSquare.y && player.y + player.height - 10 < winSquare.y + winSquare.height && foodCount == 0) {
+			// ###########
 			winLevel = true;
 
-			
-			currentLevel++;
-			PlayGame.levelMap = GetLevelMap.getLevelMap(currentLevel);
-			PlayGame.levelObjects = GetLevelMap.getLevelObjects(currentLevel);
-			Main.playGame = true;
-			Main.drawMenu = false;
+			System.out.println("YOU WIN");
+			try{
+
+			onlineGames.sendWin(id);
+			onlineGames.sendLoss(idPlayer2);
+		}catch (Exception e ){};
+
+			Main.playGame = false;
+			Main.drawMenu = true;
 			Main.init();
 			setVisible(false);
-			isRunning = false;
+			// isRunning = false;
 			dispose();
 		}
 		
@@ -603,7 +608,7 @@ public class PlayGame extends JFrame implements Runnable {
 
 
 			g.drawImage(playerPic, player.x, player.y, player.width, player.height, null);
-			g.drawImage(playerPic, player2.x, player2.y, player.width, player.height, null);
+			g.drawImage(playerPic2, player2.x, player2.y, player.width, player.height, null);
 		}
 		
 		repaint();
@@ -627,6 +632,17 @@ public class PlayGame extends JFrame implements Runnable {
 		            x = onlineGames.readX(idPlayer2);
 		            y = onlineGames.readY(idPlayer2);
 
+		            if(x == -1)
+		            {
+		            	System.out.println("You loss");
+		            	isRunning = false;
+
+		            	Main.playGame = false;
+						Main.drawMenu = true;
+						Main.init();
+						setVisible(false);
+						break;
+		            }
 		            System.out.println("X:"+x+" Y:"+y);
 		        	player2.x =x;
 		        	player2.y =y;

@@ -15,18 +15,16 @@ public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
     }
 
     @Override
-    public String getPlayer2(String level,String idPlayer)
+    public String waitOnlinePlayer(String level,String idPlayer)
     {
-        System.out.println("NEW PLAYER: Level@"+level+" ID@"+idPlayer);
+        System.out.println("WAITING PLAYER ~ LEVEL ["+level+"] PLAYER ["+idPlayer+"]" );
         if( levels.containsKey(level))
         {
             String id =levels.get(level);
-            System.out.println("PLAYER1 ID "+id+" VS PLAYER 2 ID"+idPlayer);
+            System.out.println("PLAYER ["+id+"] VS PLAYER ["+idPlayer+"]");
             levels.put(level,idPlayer);
             return id;
         }
-
-        System.out.println("PLAYER WAITING ...");
 
         levels.put(level,idPlayer);
 
@@ -47,7 +45,7 @@ public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
 
     @Override
     public boolean initPlayer(String id) throws RemoteException {
-    	System.out.println("Init Player Of ID : "+id);
+    	System.out.println("Init Player ["+id+"]");
         players.put(id,new Rectangle());
         return true;
     }
@@ -55,7 +53,6 @@ public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
     @Override
     public boolean sendPlayerUpdate(int x,int y,String id) throws RemoteException
     {
-        System.out.println("Update Player Of ID : "+id);
         players.get(id).x = x;
         players.get(id).y = y;
 
@@ -65,15 +62,29 @@ public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
     @Override
     public int readX(String id) throws RemoteException
     {
-        System.out.println("Read X Of Player ID : "+id);
+        if(!players.containsKey(id)) return -1;
         return players.get(id).x;
     }
 
     @Override
     public int readY(String id) throws RemoteException
     {
-        System.out.println("Read Y Of Player ID : "+id);
+        if(!players.containsKey(id)) return -1;
         return players.get(id).y;
+    }
+
+    @Override
+    public void sendWin(String id) throws RemoteException
+    {
+        System.out.print("Player["+id+"] WIN");
+        players.remove(id);
+    }
+
+    @Override
+    public void sendLoss(String id) throws RemoteException
+    {
+        System.out.print("Player["+id+"] Loss");
+        players.remove(id);
     }
 
 }
