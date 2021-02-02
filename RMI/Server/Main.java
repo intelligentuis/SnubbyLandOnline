@@ -3,7 +3,11 @@ import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 import java.util.*;
 
+/*
+Classes Levels, Player
 
+
+*/
 
 public class Main {
 
@@ -12,11 +16,11 @@ public class Main {
     public static void main(String[] a) {
 
         try {
-            OnlineGames games = new OnlineGames();
+            FindPlayer f = new FindPlayer();
 
             LocateRegistry.createRegistry(10101);
 
-            Naming.rebind(KEY + "Server", games);
+            Naming.rebind(KEY + "Server", f);
 
             System.out.println("Snubby Land Server Ready...");
         } catch (Exception e) {

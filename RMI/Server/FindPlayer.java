@@ -3,16 +3,20 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.awt.Rectangle;
 import java.time.LocalTime;
+import java.lang.module.FindException;
+import java.rmi.Naming;
+import java.rmi.registry.LocateRegistry;
 
 
 
-public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
 
-    private  Map<String,Rectangle> players = new HashMap<String,Rectangle>() ;
+public class FindPlayer extends UnicastRemoteObject implements IFindPlayer {
+
     private static Map<String,String> levels = new HashMap<String,String>();
+    
+    private static final String KEY = "rmi://localhost:10101/";
 
-
-    protected OnlineGames() throws RemoteException {
+    protected FindPlayer() throws RemoteException {
         super();
     }
 
@@ -46,48 +50,20 @@ public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
 
 
     @Override
-    public String initPlayer() throws RemoteException {
+    public String initPlayer(String key) throws RemoteException {
     	String id = generateID(4);
         System.out.println(LocalTime.now()+"# Init Player ["+id+"]");
-        players.put(id,new Rectangle());
+
+        try{
+
+            // LocateRegistry.createRegistry(10101);
+            Naming.rebind(KEY + "Players/"+id, new Player(key));
+
+        }catch(Exception e){
+            e.printStackTrace();
+        };
+        
         return id;
-    }
-
-    @Override
-    public boolean sendPlayerUpdate(int x,int y,String id) throws RemoteException
-    {
-        players.get(id).x = x;
-        players.get(id).y = y;
-
-        return true;
-    }
-
-    @Override
-    public int readX(String id) throws RemoteException
-    {
-        if(!players.containsKey(id)) return -1;
-        return players.get(id).x;
-    }
-
-    @Override
-    public int readY(String id) throws RemoteException
-    {
-        if(!players.containsKey(id)) return -1;
-        return players.get(id).y;
-    }
-
-    @Override
-    public void sendWin(String id) throws RemoteException
-    {
-        System.out.println(LocalTime.now()+"# Player["+id+"] WIN");
-        players.remove(id);
-    }
-
-    @Override
-    public void sendLoss(String id) throws RemoteException
-    {
-        System.out.println(LocalTime.now()+"# Player["+id+"] Loss");
-        players.remove(id);
     }
 
     private static String generateID(int length) {

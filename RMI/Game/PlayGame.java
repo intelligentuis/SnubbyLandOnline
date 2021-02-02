@@ -66,22 +66,24 @@ public class PlayGame extends JFrame implements Runnable {
 	
 	private boolean died, winLevel;
 	private int deaths = 0;
-	static IOnlineGames onlineGames;
-	static String idPlayer2 ;
+	static IFindPlayer iFindPlayer;
+	static IPlayer iPlayer,iPlayer2;
+	static String idPlayer2 ,key;
 	int i=0;
-	public static void Online()
+	public static void initOnline()
 	{
 		 try {
-            onlineGames = (IOnlineGames) Naming.lookup(KEY + "Server");
-            id = onlineGames.initPlayer();
-           
-           	System.out.println("Player ID "+id);
-            idPlayer2= onlineGames.waitOnlinePlayer(String.valueOf(currentLevel),id);
-            // System.out.println(idPlayer2);
+            iFindPlayer = (IFindPlayer) Naming.lookup(KEY + "Server");
+           	key = generateKey(10);
+            id = iFindPlayer.initPlayer(key);
+         
+           	System.out.println("My ID "+id);
+            idPlayer2= iFindPlayer.waitOnlinePlayer(String.valueOf(currentLevel),id);
+            System.out.println("Other Player ID "+idPlayer2);
 
-            System.out.println("Player2 ID "+idPlayer2);
-
-                       
+            iPlayer = (IPlayer) Naming.lookup(KEY + "Players/"+id);
+            iPlayer2 = (IPlayer) Naming.lookup(KEY + "Players/"+idPlayer2);
+            
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,7 +91,7 @@ public class PlayGame extends JFrame implements Runnable {
 	}
 
 	public PlayGame(int width, int height, String title) {
-		Online();
+		initOnline();
 		setSize(width, height);
 		setTitle(title);
 		setResizable(false);
@@ -305,6 +307,19 @@ public class PlayGame extends JFrame implements Runnable {
 		init();
 	}
 	
+	private static String generateKey(int length) {
+      String capitalCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      String lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz";
+      String numbers = "1234567890";
+      String combinedChars = capitalCaseLetters + lowerCaseLetters  + numbers;
+      Random random = new Random();
+      char[] password = new char[length];
+
+      for(int i = 0; i< length ; i++) {
+         password[i] = combinedChars.charAt(random.nextInt(combinedChars.length()));
+      }
+      return String.valueOf(password);
+     }
 	public class AL extends KeyAdapter {
 		public void keyPressed(KeyEvent e) {
 			int keyCode = e.getKeyCode();
@@ -479,8 +494,8 @@ public class PlayGame extends JFrame implements Runnable {
 			System.out.println("YOU WIN");
 			try{
 			isRunning = false;
-			onlineGames.sendWin(id);
-			onlineGames.sendLoss(idPlayer2);
+			// iFindPlayer.sendWin(id);
+			// iFindPlayer.sendLoss(idPlayer2);
 			Main.playGame = false;
 			Main.drawMenu = true;
 			Main.init();
@@ -624,9 +639,9 @@ public class PlayGame extends JFrame implements Runnable {
 				try {
 		           i++;
 
-
-		            x = onlineGames.readX(idPlayer2);
-		            y = onlineGames.readY(idPlayer2);
+		           
+		            x = iPlayer2.getX();
+		            y = iPlayer2.getY();
 
 		            if(x == -1 )
 		            {	if(isRunning)
@@ -641,7 +656,9 @@ public class PlayGame extends JFrame implements Runnable {
 						break;
 		            }
 
-		            onlineGames.sendPlayerUpdate(player.x,player.y,id);
+		            // iFindPlayer.sendPlayerUpdate(player.x,player.y,id);
+		            iPlayer.setX(key,player.x);
+		            iPlayer.setY(key,player.y);
 		            // System.out.println("X:"+x+" Y:"+y);
 		        	player2.x =x;
 		        	player2.y =y;
