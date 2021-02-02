@@ -428,10 +428,10 @@ public class PlayGame extends JFrame implements Runnable {
 				}
 			}
 			// 123456789
-			// if(enemies.get(i).blockRectangle(player, enemies.get(i)) != 0) {
-			// 	died = true;
-			// 	deaths++;
-			// }
+			if(enemies.get(i).blockRectangle(player, enemies.get(i)) != 0) {
+				died = true;
+				deaths++;
+			}
 			
 			if(died) {
 				player.x = initialX;
