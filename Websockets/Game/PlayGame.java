@@ -1,11 +1,7 @@
-import java.rmi.Naming;
+import org.json.*;
 import java.util.*;
-
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-
-
-
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -36,9 +32,8 @@ import javax.swing.JFrame;
 @SuppressWarnings("serial")
 public class PlayGame extends JFrame implements Runnable {
 
-	private static final String KEY = "rmi://localhost:10101/";
 	static String id ;
-
+	WebsocketClientEndpoint clientEndPoint;
 
 	private boolean isRunning;
 	private Image dbImage;
@@ -49,7 +44,7 @@ public class PlayGame extends JFrame implements Runnable {
 	private Image topRightCorner, topLeftCorner, topPiece, bottomPiece, rightPiece, leftPiece, allPiece, 
 	bottomRightCorner, bottomLeftCorner, verticalSides, horizontalSides, lightBlue, whitePiece, noSides, greenPiece,
 	rightEnd, bottomEnd, leftEnd, topEnd, playerPic,playerPic2, food, enemy;
-	private MyRectangle player, winSquare,player2=new MyRectangle(30, 30,  40, 40);
+	private MyRectangle player, winSquare,player2;
 	private ArrayList<MyRectangle> ground = new ArrayList<MyRectangle>();
 	private ArrayList<MyRectangle> enemies = new ArrayList<MyRectangle>();
 	private ArrayList<MyRectangle> foodObjects = new ArrayList<MyRectangle>();
@@ -66,30 +61,74 @@ public class PlayGame extends JFrame implements Runnable {
 	
 	private boolean died, winLevel;
 	private int deaths = 0;
-	static IOnlineGames onlineGames;
+
 	static String idPlayer2 ;
-	int i=0;
-	public static void Online()
-	{
-		 try {
-            onlineGames = (IOnlineGames) Naming.lookup(KEY + "Server");
-            id = onlineGames.initPlayer();
-           
-           	System.out.println("Player ID "+id);
-            idPlayer2= onlineGames.waitOnlinePlayer(String.valueOf(currentLevel),id);
-            // System.out.println(idPlayer2);
 
-            System.out.println("Player2 ID "+idPlayer2);
 
-                       
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-	}
-
+	boolean ok = false;
 	public PlayGame(int width, int height, String title) {
-		Online();
+
+		 try {
+            // open websocket
+            clientEndPoint = new WebsocketClientEndpoint(new URI("ws://pacific-plateau.herokuapp.com/game-endpoint"));
+
+            // add listener
+            clientEndPoint.addMessageHandler(new WebsocketClientEndpoint.MessageHandler() {
+                public void handleMessage(String message) {
+                    // System.out.println(message);
+
+                    JSONObject jo = new JSONObject(message);
+                    ok = true;
+                    if( jo.getString("option").equals("GameBegins"))
+                    {//
+                    	idPlayer2 = jo.getString("idPlayer2");
+                    	System.out.println("Player2 ["+idPlayer2+"]");
+                    }
+                    if( jo.getString("option").equals("update"))
+                    {
+                    	// System.out.println(message);
+
+                    	if(jo.getString("update").equals("xy"))
+                    	{
+                    		player2.x = jo.getInt("x");
+                    		player2.y = jo.getInt("y");
+                    	}
+				
+			
+                    }
+
+                }
+            });
+
+            // send message to websocket
+            // clientEndPoint.sendMessage("{'idLevel':'20','option':'startGame','user':'Abdo'}");
+            JSONObject jo = new JSONObject();
+
+			jo.put("option","startGame");
+			jo.put("idLevel",String.valueOf(currentLevel));
+			clientEndPoint.sendMessage(jo.toString());
+				
+
+            // wait 5 seconds for messages from websocket
+            // Thread.sleep(5000);
+
+        // }
+         // catch (InterruptedException ex) {
+         //    System.err.println("InterruptedException exception: " + ex.getMessage());
+        } catch (URISyntaxException ex) {
+            System.err.println("URISyntaxException exception: " + ex.getMessage());
+        }
+        while(!ok)
+        {
+        	try{
+
+        	Thread.sleep(30);
+        }catch(Exception e)
+        {
+
+        }
+        }
+
 		setSize(width, height);
 		setTitle(title);
 		setResizable(false);
@@ -106,6 +145,7 @@ public class PlayGame extends JFrame implements Runnable {
 			for(int j=0; j < levelObjects[i].length; j++) {	
 				if(levelObjects[i][j] == 12) {
 					player = new MyRectangle(30, 30, j * 40, i *40);
+					player2 = new MyRectangle(30, 30, j * 40, i *40);
 					initialX = player.x;
 					initialY = player.y;
 				}
@@ -316,6 +356,10 @@ public class PlayGame extends JFrame implements Runnable {
 				player.dx = -5;
 			if(keyCode == e.VK_RIGHT)
 				player.dx = 5;
+
+			
+				
+			
 		}
 		
 		public void keyReleased(KeyEvent e) {
@@ -328,6 +372,7 @@ public class PlayGame extends JFrame implements Runnable {
 				player.dx = 0;
 			if(keyCode == e.VK_LEFT) 
 				player.dx = 0;
+			
 		}
 	}
 	
@@ -369,9 +414,21 @@ public class PlayGame extends JFrame implements Runnable {
 	}	
 	
 	public void move() {
+
 		player.x += player.dx;
 		player.y += player.dy;
 		
+		if(player.dx +player.dy != 0)
+		{JSONObject jo = new JSONObject();
+		
+				jo.put("option","update");
+				jo.put("update","xy");
+				jo.put("x",player.x);
+				jo.put("y",player.y);
+				jo.put("idPlayer2",idPlayer2);
+		
+				clientEndPoint.sendMessage(jo.toString());}
+
 		for(int i=0; i < ground.size(); i++) {
 			player.blockRectangle(player, ground.get(i));
 		}
@@ -479,8 +536,8 @@ public class PlayGame extends JFrame implements Runnable {
 			System.out.println("YOU WIN");
 			try{
 			isRunning = false;
-			onlineGames.sendWin(id);
-			onlineGames.sendLoss(idPlayer2);
+
+			// clientEndPoint.sendMessage("{'update':'win','option':'update','idPlayer2':'Abdo'}");
 			Main.playGame = false;
 			Main.drawMenu = true;
 			Main.init();
@@ -619,37 +676,7 @@ public class PlayGame extends JFrame implements Runnable {
 				
 				Thread.sleep(30);
 
-				int x=-1,y=-1;
-		
-				try {
-		           i++;
-
-
-		            x = onlineGames.readX(idPlayer2);
-		            y = onlineGames.readY(idPlayer2);
-
-		            if(x == -1 )
-		            {	if(isRunning)
-		            	System.out.println("YOU LOSS");
-
-		            	isRunning = false;
-
-		            	Main.playGame = false;
-						Main.drawMenu = true;
-						Main.init();
-						setVisible(false);
-						break;
-		            }
-
-		            onlineGames.sendPlayerUpdate(player.x,player.y,id);
-		            // System.out.println("X:"+x+" Y:"+y);
-		        	player2.x =x;
-		        	player2.y =y;
-
-		        } catch (Exception e) {
-		            e.printStackTrace();
-		        }
-
+				
 			}
 		} catch(Exception e) {
 			e.printStackTrace();

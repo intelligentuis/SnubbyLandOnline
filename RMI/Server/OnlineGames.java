@@ -34,7 +34,7 @@ public class OnlineGames extends UnicastRemoteObject implements IOnlineGames {
             try
             {
 
-            Thread.sleep((long)0.2);
+            Thread.sleep(30);
         }catch(Exception e){};
         };
 
